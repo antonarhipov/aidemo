@@ -16,9 +16,13 @@ public class AlgorithmController {
     public ResponseEntity<List<D>> createDList(@RequestBody List<D> ds) {
         D[] input = ds.toArray(new D[0]);
         List<D> result = TheAlgorithm.run(input);
+        validateResult(result);
+        return ResponseEntity.ok(result);
+    }
+
+    private void validateResult(List<D> result) {
         if (result == null) {
             throw new IllegalStateException("Couldn't calculate the result");
         }
-        return ResponseEntity.ok(result);
     }
 }
