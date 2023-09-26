@@ -3,9 +3,6 @@ package me.arhan.aidemo.math;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TheAlgorithm class represents an algorithm for finding the convex hull of a given set of points.
- */
 public class TheAlgorithm {
 
     public static int t(D p, D q, D r) {
