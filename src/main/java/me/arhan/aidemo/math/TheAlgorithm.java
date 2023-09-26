@@ -4,45 +4,53 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TheAlgorithm {
+    public static List<D> run(D[] d) {
+        return ConvexHullAlgorithm.computeConvexHull(d);
+    }
+}
 
-    public static int t(D p, D q, D r) {
-        int val = (q.y - p.y) * (r.x - q.x) -
-                  (q.x - p.x) * (r.y - q.y);
+class ConvexHullAlgorithm {
+    private static final int CLOCKWISE = 2;
 
-        if (val == 0) return 0;
-        return (val > 0) ? 1 : 2;
+    private static int calculateOrientation(D point1, D point2, D point3) {
+        int value = (point2.y - point1.y) * (point3.x - point2.x) -
+                    (point2.x - point1.x) * (point3.y - point2.y);
+
+        if (value == 0) return 0;
+        return (value > 0) ? 1 : CLOCKWISE;
     }
 
-    public static List<D> run(D[] dts) {
-        if (dts.length < 3) return null;
-
-        List<D> ds = new ArrayList<>();
-
-        int l = 0;
-        int l1 = l;
-        for (int i1 = 1; i1 < dts.length; i1++)
-            if (dts[i1].x < dts[l1].x)
-                l1 = i1;
-        l = l1;
-
+    public static List<D> computeConvexHull(D[] points) {
+        if (points.length < 3) return null;
+        List<D> hullPoints = new ArrayList<>();
+        int l = findPointWithSmallestXCoordinate(points);
         int p = l, q;
-        do {
-            ds.add(dts[p]);
-            q = (p + 1) % dts.length;
 
-            for (int i = 0; i < dts.length; i++) {
-                if (t(dts[p], dts[i], dts[q]) == 2)
+        do {
+            hullPoints.add(points[p]);
+            q = (p + 1) % points.length;
+            for (int i = 0; i < points.length; i++) {
+                if (calculateOrientation(points[p], points[i], points[q]) == CLOCKWISE)
                     q = i;
             }
-
             p = q;
-
         } while (p != l);
 
-        for (D temp : ds)
-            System.out.println("(" + temp.x + ", " + temp.y + ")");
-
-        return ds;
+        printPoints(hullPoints);
+        return hullPoints;
     }
 
+    private static int findPointWithSmallestXCoordinate(D[] points) {
+        int leftMost = 0;
+        for (int i = 1; i < points.length; i++)
+            if (points[i].x < points[leftMost].x)
+                leftMost = i;
+
+        return leftMost;
+    }
+
+    private static void printPoints(List<D> points) {
+        for (D point : points)
+            System.out.println("(" + point.x + ", " + point.y + ")");
+    }
 }
