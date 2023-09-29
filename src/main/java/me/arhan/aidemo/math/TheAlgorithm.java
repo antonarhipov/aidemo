@@ -3,11 +3,6 @@ package me.arhan.aidemo.math;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TheAlgorithm is a class that implements a specific algorithm.
- * This algorithm calculates the convex hull of a given set of points.
- * The convex hull is the smallest convex polygon that contains all the points.
- */
 public class TheAlgorithm {
 
     public static int t(D p, D q, D r) {
