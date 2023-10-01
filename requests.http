@@ -11,3 +11,12 @@ Content-Type: application/json
   {"x": 5, "y": 11},
   {"x": 4, "y": 8}
 ]
+
+#####
+POST http://localhost:8080/ds
+Content-Type: application/json
+
+[
+  {"x": 1, "y": 2},
+  {"x": 3, "y": 4}
+]

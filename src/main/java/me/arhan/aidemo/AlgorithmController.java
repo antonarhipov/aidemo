@@ -16,6 +16,7 @@ public class AlgorithmController {
     public ResponseEntity<List<D>> createDList(@RequestBody List<D> ds) {
         D[] input = ds.toArray(new D[0]);
         List<D> result = TheAlgorithm.run(input);
+        System.out.println("The convex contains " + result.size() + " points");
         return ResponseEntity.ok(result);
     }
 
