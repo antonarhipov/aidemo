@@ -3,27 +3,30 @@ package me.arhan.aidemo.custom;
 import me.arhan.aidemo.math.D;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AnotherAlgorithm {
-    public static List<D> run(D[] dts) {
-        if (dts.length < 2) throw new IllegalArgumentException("Need more data");
-
-        Set<D> ds = new HashSet<>();
-
-        for (D dt : dts) {
-            List<D> list = f(dt, dts);
-            ds.addAll(list);
+    public static List<D> run(List<D> data) {
+        if (data.size() < 2) throw new IllegalArgumentException("Need more data");
+        Set<D> dataSet = new HashSet<>();
+        for (D datum : data) {
+            List<D> list = filterDataWithinRange(datum, data);
+            dataSet.addAll(list);
         }
-
-        for (D temp : ds)
-            System.out.println("(" + temp.x + ", " + temp.y + ")");
-
-        return ds.stream().toList();
+        dataSet.forEach(AnotherAlgorithm::printData);
+        return new ArrayList<>(dataSet);
     }
 
-    private static List<D> f(D dt, D[] dts) {
-//        return Arrays.stream(dts).filter(d -> dt.x - d.x < 5 && dt.y - d.y < 5).toList();
-        return Arrays.stream(dts).filter(d -> (dt.x - d.x) + (dt.y - d.y) < 5).toList();
+    private static List<D> filterDataWithinRange(D dt, List<D> data) {
+        return data.stream()
+                .filter(d -> {
+                    int delta = Math.abs((dt.getX() - d.getX()) + (dt.getY() - d.getY()));
+                    return delta < 5;
+                })
+                .collect(Collectors.toList());
     }
 
+    private static void printData(D temp) {
+        System.out.println("(" + temp.getX() + ", " + temp.getY() + ")");
+    }
 }
