@@ -1,4 +1,5 @@
-POST http://localhost:8080/coordinates
+### Calculate convex hull for a set of points using default algorithm (Graham's Scan)
+POST http://localhost:8080/api/coordinates
 Content-Type: application/json
 
 [
@@ -12,11 +13,66 @@ Content-Type: application/json
   {"x": 4, "y": 8}
 ]
 
-#####
-POST http://localhost:8080/coordinates
+### Calculate convex hull using Gift Wrapping algorithm
+POST http://localhost:8080/api/coordinates/with-algorithm?algorithm=GIFT_WRAPPING
+Content-Type: application/json
+
+[
+  {"x": 1, "y": 2},
+  {"x": 3, "y": 4},
+  {"x": 5, "y": 6},
+  {"x": 7, "y": 9},
+  {"x": 15, "y": 3},
+  {"x": 4, "y": 2},
+  {"x": 5, "y": 11},
+  {"x": 4, "y": 8}
+]
+
+### Calculate convex hull using Graham's Scan algorithm
+POST http://localhost:8080/api/coordinates/with-algorithm?algorithm=GRAHAM_SCAN
+Content-Type: application/json
+
+[
+  {"x": 1, "y": 2},
+  {"x": 3, "y": 4},
+  {"x": 5, "y": 6},
+  {"x": 7, "y": 9},
+  {"x": 15, "y": 3},
+  {"x": 4, "y": 2},
+  {"x": 5, "y": 11},
+  {"x": 4, "y": 8}
+]
+
+### Example with fewer than 3 points (returns empty list)
+POST http://localhost:8080/api/coordinates
 Content-Type: application/json
 
 [
   {"x": 1, "y": 2},
   {"x": 3, "y": 4}
+]
+
+### Example with a square
+POST http://localhost:8080/api/coordinates
+Content-Type: application/json
+
+[
+  {"x": 0, "y": 0},
+  {"x": 0, "y": 5},
+  {"x": 5, "y": 5},
+  {"x": 5, "y": 0}
+]
+
+### Example with points inside the hull
+POST http://localhost:8080/api/coordinates
+Content-Type: application/json
+
+[
+  {"x": 0, "y": 0},
+  {"x": 0, "y": 10},
+  {"x": 10, "y": 10},
+  {"x": 10, "y": 0},
+  {"x": 5, "y": 5},
+  {"x": 3, "y": 3},
+  {"x": 7, "y": 7}
 ]

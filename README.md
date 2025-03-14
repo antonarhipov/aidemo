@@ -1,16 +1,82 @@
-## IntelliJ AI assistant demo
+# Convex Hull Algorithm Demo
 
-### Features to demonstrate:
+This project demonstrates different algorithms for computing the convex hull of a set of points. It provides a RESTful API for computing convex hulls and a web interface for visualizing the results.
 
-On any element, preferably a class, hit Alt+Enter and select AI actions. For instance, Alt+Enter on TheAlgorithm class, select AI actions:
+## Features
 
-1. Call **Explain 'TheAlgorithm' class** action, and see the results in the chat. The code implements a variation of a [Convex Hull](https://en.wikipedia.org/wiki/Convex_hull) algorithm that isn't as trivial as any sort algorithm or Fibonacci
-2. Try either **renaming** run method of TheAlgorithm class or **extract** a new function from the run method. The AI completion kicks in with a little delay. The AI-suggested names are more descriptive compared to the default suggestion by the IDE which is based on the names and types of the variables and methods
-3. **AI actions -> Find problems in selection**.
-4. **AI actions -> Suggest refactoring**. See the result and adjust the constraints via chat
-5. After refactoring, it's worth documenting the code. **AI actions -> Write documentation**
-6. .. or event generate tests: **AI actions -> Start new chat with selection**. This will start a new chat and copy the selected code block. Add any request that you'coordinate like to execute for this code. For instance, "generate unit tests for the following code:". However, it this action is going to be used often, it makes sense to add this as a custom prompt to the user library. In the chat window, on the bottom-left, click the floppy button. A dialog will pop up. Delete the code fragment and replace it with **$SELECTION** variable, give the prompt a name, and save. Now the custom prompt is available via the AI actions quick list and could be reused for any code.
+- Compute convex hulls using different algorithms:
+  - Graham's Scan (O(n log n) time complexity)
+  - Gift Wrapping / Jarvis March (O(nh) time complexity, where h is the number of points on the hull)
+- RESTful API with OpenAPI documentation
+- Performance tracking and comparison between algorithms
+- Web dashboard for visualizing results and statistics
+- Persistent storage of calculation results
 
-### Other features
-**Explain commit**. Right click on any commit in the git log view and select *Explain commit* from the menu. The results are printed in a new chat.
-**Generate commit message**. In the commit dialog, on the top-right of the commit message text area, click on the AI assistant icon. This will generate a summary based on the changes included into the current change set.
+## Getting Started
+
+### Prerequisites
+
+- Java 17 or higher
+- Gradle
+
+### Running the Application
+
+1. Clone the repository
+2. Navigate to the project directory
+3. Run the application:
+
+```bash
+./gradlew bootRun
+```
+
+The application will be available at http://localhost:8080
+
+## API Documentation
+
+The API documentation is available at:
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- OpenAPI Specification: http://localhost:8080/api-docs
+
+## Web Dashboard
+
+The web dashboard is available at http://localhost:8080 and provides:
+- Performance comparison between algorithms
+- Usage statistics
+- Recent calculation results
+- Test interface for running convex hull calculations
+
+## Database Console
+
+The H2 database console is available at http://localhost:8080/h2-console with the following connection details:
+- JDBC URL: jdbc:h2:file:./data/convexhull
+- Username: sa
+- Password: password
+
+## API Endpoints
+
+### Convex Hull Endpoints
+
+- `POST /api/convexhull`: Compute convex hull using the default algorithm
+- `POST /api/convexhull/{algorithm}`: Compute convex hull using the specified algorithm
+- `GET /api/convexhull/algorithms`: Get available algorithms
+
+### Calculation Results Endpoints
+
+- `GET /api/results`: Get all calculation results
+- `GET /api/results/algorithm/{algorithmType}`: Get calculation results by algorithm type
+- `GET /api/results/stats/average-times`: Get average calculation times for all algorithm types
+
+## Project Structure
+
+- `src/main/java/me/arhan/aidemo/math`: Convex hull algorithms
+- `src/main/java/me/arhan/aidemo/controller`: REST controllers
+- `src/main/java/me/arhan/aidemo/service`: Business logic
+- `src/main/java/me/arhan/aidemo/entity`: Database entities
+- `src/main/java/me/arhan/aidemo/repository`: Data access layer
+- `src/main/java/me/arhan/aidemo/dto`: Data transfer objects
+- `src/main/java/me/arhan/aidemo/config`: Configuration classes
+- `src/main/resources/static`: Web interface
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

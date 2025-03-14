@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convex Hull Visualization</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+    <style>
+        #canvas {
+            border: 1px solid #ccc;
+            background-color: #f8f9fa;
+        }
+        .point {
+            fill: #007bff;
+            r: 5;
+        }
+        .hull-point {
+            fill: #dc3545;
+            r: 5;
+        }
+        .hull-line {
+            stroke: #dc3545;
+            stroke-width: 2;
+            fill: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Convex Hull Visualization</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <svg id="canvas" width="700" height="500"></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        Controls
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="algorithm" class="form-label">Algorithm</label>
+                            <select id="algorithm" class="form-select">
+                                <option th:each="algo : ${algorithms}" 
+                                        th:value="${algo}" 
+                                        th:text="${algo}">
+                                    GRAHAM_SCAN
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="numPoints" class="form-label">Number of Random Points</label>
+                            <input type="number" id="numPoints" class="form-control" value="20" min="3" max="100">
+                        </div>
+                        <div class="mb-3">
+                            <button id="generatePoints" class="btn btn-primary">Generate Random Points</button>
+                        </div>
+                        <div class="mb-3">
+                            <button id="calculateHull" class="btn btn-success">Calculate Convex Hull</button>
+                        </div>
+                        <div class="mb-3">
+                            <button id="clearCanvas" class="btn btn-danger">Clear Canvas</button>
+                        </div>
+                        <div class="mb-3">
+                            <p>Click on the canvas to add points manually.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-header">
+                        Results
+                    </div>
+                    <div class="card-body">
+                        <div id="results">
+                            <p>Points: <span id="pointCount">0</span></p>
+                            <p>Hull Points: <span id="hullPointCount">0</span></p>
+                            <p>Calculation Time: <span id="calculationTime">0</span> ms</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        About Convex Hull Algorithms
+                    </div>
+                    <div class="card-body">
+                        <h5>What is a Convex Hull?</h5>
+                        <p>
+                            The convex hull of a set of points is the smallest convex polygon that contains all the points.
+                            It can be visualized as the shape formed by a rubber band stretched around the points.
+                        </p>
+                        
+                        <h5>Algorithms</h5>
+                        <ul>
+                            <li>
+                                <strong>Gift Wrapping (Jarvis March)</strong>: A simple algorithm with O(n*h) time complexity,
+                                where n is the number of points and h is the number of points on the hull.
+                            </li>
+                            <li>
+                                <strong>Graham's Scan</strong>: A more efficient algorithm with O(n log n) time complexity.
+                            </li>
+                        </ul>
+                        
+                        <h5>Performance Comparison</h5>
+                        <p>
+                            For small datasets, Graham's Scan is typically faster than Gift Wrapping.
+                            However, for datasets with few hull points, Gift Wrapping can be more efficient.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('canvas');
+            const pointCountElement = document.getElementById('pointCount');
+            const hullPointCountElement = document.getElementById('hullPointCount');
+            const calculationTimeElement = document.getElementById('calculationTime');
+            
+            let points = [];
+            let hullPoints = [];
+            
+            // Add point on canvas click
+            canvas.addEventListener('click', function(event) {
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.round(event.clientX - rect.left);
+                const y = Math.round(event.clientY - rect.top);
+                
+                addPoint(x, y);
+                renderPoints();
+                updatePointCount();
+            });
+            
+            // Generate random points
+            document.getElementById('generatePoints').addEventListener('click', function() {
+                const numPoints = parseInt(document.getElementById('numPoints').value);
+                if (numPoints < 3 || numPoints > 100) {
+                    alert('Please enter a number between 3 and 100');
+                    return;
+                }
+                
+                clearCanvas();
+                
+                for (let i = 0; i < numPoints; i++) {
+                    const x = Math.floor(Math.random() * (canvas.width.baseVal.value - 20)) + 10;
+                    const y = Math.floor(Math.random() * (canvas.height.baseVal.value - 20)) + 10;
+                    addPoint(x, y);
+                }
+                
+                renderPoints();
+                updatePointCount();
+            });
+            
+            // Calculate convex hull
+            document.getElementById('calculateHull').addEventListener('click', function() {
+                if (points.length < 3) {
+                    alert('Please add at least 3 points');
+                    return;
+                }
+                
+                const algorithm = document.getElementById('algorithm').value;
+                
+                // Convert points to the format expected by the API
+                const pointDtos = points.map(p => ({ x: p.x, y: p.y }));
+                
+                const startTime = performance.now();
+                
+                // Call the API to calculate the convex hull
+                fetch(`/api/convexhull/${algorithm}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(pointDtos)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(error => {
+                            throw new Error(error.error || 'Unknown error');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const endTime = performance.now();
+                    const calculationTime = (endTime - startTime).toFixed(2);
+                    
+                    // Convert API response to hull points
+                    hullPoints = data.map(p => ({ x: p.x, y: p.y }));
+                    
+                    renderPoints();
+                    renderHull();
+                    
+                    // Update results
+                    hullPointCountElement.textContent = hullPoints.length;
+                    calculationTimeElement.textContent = calculationTime;
+                })
+                .catch(error => {
+                    alert('Error calculating convex hull: ' + error.message);
+                });
+            });
+            
+            // Clear canvas
+            document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
+            
+            function addPoint(x, y) {
+                points.push({ x, y });
+            }
+            
+            function renderPoints() {
+                // Clear existing points
+                const existingPoints = canvas.querySelectorAll('.point');
+                existingPoints.forEach(point => point.remove());
+                
+                // Render points
+                points.forEach(point => {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', point.x);
+                    circle.setAttribute('cy', point.y);
+                    circle.setAttribute('class', 'point');
+                    canvas.appendChild(circle);
+                });
+            }
+            
+            function renderHull() {
+                // Clear existing hull
+                const existingHullPoints = canvas.querySelectorAll('.hull-point');
+                existingHullPoints.forEach(point => point.remove());
+                
+                const existingHullLines = canvas.querySelectorAll('.hull-line');
+                existingHullLines.forEach(line => line.remove());
+                
+                if (hullPoints.length === 0) {
+                    return;
+                }
+                
+                // Create path for hull
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('class', 'hull-line');
+                
+                let pathData = `M ${hullPoints[0].x} ${hullPoints[0].y}`;
+                for (let i = 1; i < hullPoints.length; i++) {
+                    pathData += ` L ${hullPoints[i].x} ${hullPoints[i].y}`;
+                }
+                pathData += ' Z'; // Close the path
+                
+                path.setAttribute('d', pathData);
+                canvas.appendChild(path);
+                
+                // Render hull points
+                hullPoints.forEach(point => {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', point.x);
+                    circle.setAttribute('cy', point.y);
+                    circle.setAttribute('class', 'hull-point');
+                    canvas.appendChild(circle);
+                });
+            }
+            
+            function clearCanvas() {
+                points = [];
+                hullPoints = [];
+                
+                // Clear all elements from canvas
+                while (canvas.firstChild) {
+                    canvas.removeChild(canvas.firstChild);
+                }
+                
+                // Reset results
+                updatePointCount();
+                hullPointCountElement.textContent = '0';
+                calculationTimeElement.textContent = '0';
+            }
+            
+            function updatePointCount() {
+                pointCountElement.textContent = points.length;
+            }
+        });
+    </script>
+</body>
+</html> 

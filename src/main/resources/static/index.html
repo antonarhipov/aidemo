@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convex Hull Algorithm Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .chart-container {
+            height: 400px;
+            margin-bottom: 30px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Convex Hull Algorithm Dashboard</h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Performance Comparison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="performanceChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Usage Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="usageChart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Calculations</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Algorithm</th>
+                                <th>Input Points</th>
+                                <th>Hull Points</th>
+                                <th>Calculation Time (ms)</th>
+                                <th>Created At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTable">
+                            <!-- Results will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>API Links</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <a href="/swagger-ui.html" target="_blank">Swagger UI</a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="/api-docs" target="_blank">OpenAPI Specification</a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="/h2-console" target="_blank">H2 Database Console</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Test Convex Hull</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="testForm">
+                            <div class="mb-3">
+                                <label for="algorithm" class="form-label">Algorithm</label>
+                                <select class="form-select" id="algorithm">
+                                    <option value="GRAHAM_SCAN">Graham's Scan</option>
+                                    <option value="GIFT_WRAPPING">Gift Wrapping</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pointCount" class="form-label">Number of Random Points</label>
+                                <input type="number" class="form-control" id="pointCount" min="3" max="10000" value="100">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Run Test</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Performance chart
+        let performanceChart;
+        let usageChart;
+        
+        // Initialize charts
+        function initCharts() {
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            performanceChart = new Chart(performanceCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Graham\'s Scan', 'Gift Wrapping'],
+                    datasets: [{
+                        label: 'Average Calculation Time (ms)',
+                        data: [0, 0],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(255, 99, 132, 0.5)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Time (ms)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const usageCtx = document.getElementById('usageChart').getContext('2d');
+            usageChart = new Chart(usageCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Graham\'s Scan', 'Gift Wrapping'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(255, 99, 132, 0.5)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Algorithm Usage'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Load calculation results
+        async function loadResults() {
+            try {
+                const response = await fetch('/api/results');
+                const results = await response.json();
+                
+                // Update table
+                const tableBody = document.getElementById('resultsTable');
+                tableBody.innerHTML = '';
+                
+                results.slice(0, 10).forEach(result => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${result.id}</td>
+                        <td>${result.algorithmType}</td>
+                        <td>${result.inputPointsCount}</td>
+                        <td>${result.hullPointsCount}</td>
+                        <td>${result.calculationTimeMs.toFixed(2)}</td>
+                        <td>${new Date(result.createdAt).toLocaleString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+                
+                // Update charts
+                updateCharts();
+            } catch (error) {
+                console.error('Error loading results:', error);
+            }
+        }
+        
+        // Update charts with average calculation times
+        async function updateCharts() {
+            try {
+                const response = await fetch('/api/results/stats/average-times');
+                const averageTimes = await response.json();
+                
+                // Update performance chart
+                performanceChart.data.datasets[0].data = [
+                    averageTimes.GRAHAM_SCAN || 0,
+                    averageTimes.GIFT_WRAPPING || 0
+                ];
+                performanceChart.update();
+                
+                // Count algorithm usage
+                const grahamCount = await countAlgorithmUsage('GRAHAM_SCAN');
+                const giftWrappingCount = await countAlgorithmUsage('GIFT_WRAPPING');
+                
+                // Update usage chart
+                usageChart.data.datasets[0].data = [grahamCount, giftWrappingCount];
+                usageChart.update();
+            } catch (error) {
+                console.error('Error updating charts:', error);
+            }
+        }
+        
+        // Count algorithm usage
+        async function countAlgorithmUsage(algorithm) {
+            try {
+                const response = await fetch(`/api/results/algorithm/${algorithm}`);
+                const results = await response.json();
+                return results.length;
+            } catch (error) {
+                console.error(`Error counting ${algorithm} usage:`, error);
+                return 0;
+            }
+        }
+        
+        // Generate random points and run test
+        async function runTest(event) {
+            event.preventDefault();
+            
+            const algorithm = document.getElementById('algorithm').value;
+            const pointCount = parseInt(document.getElementById('pointCount').value);
+            
+            if (pointCount < 3 || pointCount > 10000) {
+                alert('Please enter a number between 3 and 10000');
+                return;
+            }
+            
+            // Generate random points
+            const points = [];
+            for (let i = 0; i < pointCount; i++) {
+                points.push({
+                    x: Math.random() * 1000,
+                    y: Math.random() * 1000
+                });
+            }
+            
+            try {
+                // Call API
+                const response = await fetch(`/api/convexhull/${algorithm}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(points)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                
+                const result = await response.json();
+                alert(`Convex hull computed successfully with ${algorithm}. Hull contains ${result.length} points.`);
+                
+                // Reload results
+                loadResults();
+            } catch (error) {
+                console.error('Error running test:', error);
+                alert('Error running test. See console for details.');
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            loadResults();
+            document.getElementById('testForm').addEventListener('submit', runTest);
+            
+            // Refresh data every 10 seconds
+            setInterval(loadResults, 10000);
+        });
+    </script>
+</body>
+</html> 
